@@ -3,7 +3,9 @@
 <link rel="import" href="../core-input/core-input.html">
 <link rel="import" href="../core-collapse/core-collapse.html">
 <link rel="import" href="../core-icon-button/core-icon-button.html">
+<!-- <link rel="import" href="../google-map/google-map.html"> -->
 <!-- <link rel="import" href="../th-google-map/th-google-map.html"> -->
+<!-- <link rel="import" href="../google-map-apis/google-map-apis.html"> -->
 <!-- <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script> -->
 <!--
 
@@ -18,7 +20,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
 @status alpha
 @homepage http://thelmanews.github.io/th-geocoder
 -->
-<polymer-element name="th-geocoder" attributes="input">
+<polymer-element name="th-geocoder" attributes="input reverseGeocode">
 
   <template>
     <style>
@@ -59,19 +61,19 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
     </core-collapse>
 
     <template repeat="{{place in output}}">
-      <li>{{place.location}}: ({{place.latitude}}, {{place.longitude}})</li>
+      <li>{{place.label}}: ({{place.latitude}}, {{place.longitude}})</li>
     </template>
-
+    <!-- <google-map></google-map> -->
   </template>
 
   <script>
 
     Polymer({
       apiKey: 'AIzaSyAx4TSHX3LEP1MC_sU4lwzyujmAWu3a740', // not needed?
-      // input: '1501 Lexington Avenue, New York, NY 10029', // string
+      input: 'Bryant Park, New York, NY', // string
       // input: ['1501 Lexington Avenue, New York, NY 10029', '54 West 40th Street, New York, NY 10018'], // array
       // input: '40.7863301, -73.95027060000001', // coordinates for reverseGeocode
-      input: [{'address':'1501 Lexington Avenue, New York, NY 10029', 'address2':'1500 Lexington Avenue, New York, NY 10029'}, {'address':'54 West 40th Street, New York, NY 10018', 'address2':'56 West 40th Street, New York, NY 10018'}], // array of objects
+      // input: [{'address':'1501 Lexington Avenue, New York, NY 10029', 'address2':'1500 Lexington Avenue, New York, NY 10029'}, {'address':'54 West 40th Street, New York, NY 10018', 'address2':'56 West 40th Street, New York, NY 10018'}], // array of objects
       // input: {'address': '1501 Lexington Avenue, New York, NY 10029' }, // object
       output: [],
       /**
@@ -79,7 +81,6 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
        * @type {Boolean}
        */
       reverseGeocode: false,
-      
       ready: function() {
         var self = this;
         self.geocoder = new google.maps.Geocoder(); 
@@ -145,9 +146,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
            if (status == google.maps.GeocoderStatus.OK) {
               var lat = results[0].geometry.location.k,
                   lng = results[0].geometry.location.B;
-          // console.log(input);
-              outputArr.push({'input': location, 'location': location, 'latitude': lat, 'longitude':lng});
-              // console.log(output);
+              outputArr.push({'input': location, 'label': location, 'latitude': lat, 'longitude':lng});
            } else {
               alert("Geocode was not successful for the following reason: " + status);
            }
@@ -170,10 +169,9 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
         
         self.geocoder.geocode({'latLng': coordinates}, function(results, status){
            if (status == google.maps.GeocoderStatus.OK) {
-              // TODO: account for no results
               // TODO: what should the output look like?? can also get city, state, zip, etc separately 
               var location = results[0].formatted_address;
-              outputArr.push({'input': latlng, 'location': location, 'latitude':lat, 'longitude': lng });
+              outputArr.push({'input': latlng, 'label': location, 'latitude':lat, 'longitude': lng });
            } else {
               alert("Geocode was not successful for the following reason: " + status);
            }
