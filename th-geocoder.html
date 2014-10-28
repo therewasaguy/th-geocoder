@@ -1,0 +1,119 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../core-selector/core-selector.html">
+<link rel="import" href="../core-input/core-input.html">
+
+<link rel="import" href="../core-collapse/core-collapse.html">
+<link rel="import" href="../core-icon-button/core-icon-button.html">
+
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+<!--
+Element providing solution to no problem in particular.
+
+##### Example
+
+    <th-geocoder></th-geocoder>
+
+@element th-geocoder
+@blurb Element providing solution to no problem in particular.
+@status alpha
+@homepage http://polymerlabs.github.io/th-geocoder
+-->
+<polymer-element name="th-geocoder" attributes="input reverseGeocode">
+
+  <template>
+    <style>
+       core-selector {
+          min-height: 10px;
+          display: inline-block;
+        }
+
+        core-selector .col {
+          padding: 3px;
+          border: 1px solid #ccc;
+        }
+        core-selector .core-selected {
+          background-color: #ccc;
+          border: 1px solid #888;
+
+        }
+        label {
+          display: block;
+          color: #2fa3af;
+          border-top: 1px solid #AAA;
+        }
+    </style>
+    <template repeat="{{place in output}}">
+      <li>{{place.input}}: ({{place.lat}}, {{place.lng}})</li>
+    </template>
+  </template>
+  
+  <script>
+
+    Polymer({
+      apiKey: 'AIzaSyAx4TSHX3LEP1MC_sU4lwzyujmAWu3a740', // not needed?
+      version: '3.exp',
+      output: [],
+      // input: '1501 Lexington Avenue, New York, NY 10029', // string
+      input: ['1501 Lexington Avenue, New York, NY 10029', '54 West 40th Street, New York, NY 10018'], // array
+      // input: [{'address':'1501 Lexington Avenue, New York, NY 10029'}, {'address':'54 West 40th Street, New York, NY 10018'}], // array of objects
+      // input: {'address': '1501 Lexington Avenue, New York, NY 10029' }, // object
+      ready: function() {
+        var self = this;
+        self.geocoder = new google.maps.Geocoder(); 
+        self.inputChanged();
+      },
+      inputChanged: function(){
+        var self = this;
+
+        self.output= [];
+        
+        switch (typeof(self.input)){
+          case "string":
+            self._addGeocode(self.input, self.output);
+            break;
+          case "object": // array or object
+            var length = self.input.length;
+            if (length > 0){
+              for (var i=0; i<length; i++){
+                if (typeof(self.input[i]) === 'string'){
+                  self._addGeocode(self.input[i], self.output);
+                }
+                else {
+                  console.log("it's an array of objects");
+                // figure out how to select the correct attribute to send to geocode
+                }
+              }
+            } else {
+              console.log("it's an object");
+              // figure out how to select the correct attribute to send
+            }
+            break;   
+          default: 
+            alert("Invalid input data");      
+        }
+
+      },
+      _addGeocode: function(input, output){
+        var self = this;
+        
+        self.geocoder.geocode({'address': input}, function(results, status){
+           if (status == google.maps.GeocoderStatus.OK) {
+              var lat = results[0].geometry.location.k,
+                  lng = results[0].geometry.location.B;
+        
+              output.push({'label': input, 'lat': lat, 'lng':lng});
+              console.log(output);
+           } else {
+              alert("Geocode was not successful for the following reason: " + status);
+           }
+        });
+        
+      }
+
+     
+
+    });
+
+  </script>
+
+</polymer-element>
