@@ -5,20 +5,18 @@
   <title>th-geocoder Demo</title>
 
   <script src="../platform/platform.js"></script>
-  <!-- <link rel="import" href="../th-google-map/th-google-map.html"> -->
   <link rel="import" href="th-geocoder.html">
-  
-  
-  <!-- Why does this need to be here? -->
-  <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+  <link rel="import" href="../th-google-map/th-google-map.html">
 
 </head>
 <body unresolved>
 
   <p>An `th-geocoder` looks like this:</p>
-
-  <th-geocoder id="geocoder"></th-geocoder>
-
+  
+  <template is="auto-binding">
+    <th-geocoder id="geocoder"></th-geocoder>
+    <th-google-map markers="{{$.geocoder.output}}" fitToMarkers="true"></th-google-map>
+  </template>
 
 </body>
 </html>

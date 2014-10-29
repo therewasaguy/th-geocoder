@@ -3,10 +3,8 @@
 <link rel="import" href="../core-input/core-input.html">
 <link rel="import" href="../core-collapse/core-collapse.html">
 <link rel="import" href="../core-icon-button/core-icon-button.html">
-<!-- <link rel="import" href="../google-map/google-map.html"> -->
-<!-- <link rel="import" href="../th-google-map/th-google-map.html"> -->
-<!-- <link rel="import" href="../google-map-apis/google-map-apis.html"> -->
-<!-- <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script> -->
+<link rel="import" href="../google-apis/google-maps-api.html">
+
 <!--
 
 The th-geocoder retrieves the latitude and longitude coordinates of a location or set of locations. It also can retrieve the location name, given a set or multple sets of coordinates.
@@ -49,7 +47,10 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
         padding: 2px;
       }
     </style>
-
+    <!-- Load Google Maps API -->
+    <google-maps-api on-api-load="{{apiReady}}"></google-maps-api>
+    
+    <!-- Menu for selecting input --> 
     <core-icon-button icon="perm-data-setting" on-click="{{showControls}}"></core-icon-button>
     <core-collapse id="ctrl_collapse">      
       <label for="label_selector">Select label column: </label> 
@@ -60,20 +61,19 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
       </core-selector>
     </core-collapse>
 
+
     <template repeat="{{place in output}}">
       <li>{{place.label}}: ({{place.latitude}}, {{place.longitude}})</li>
     </template>
-    <!-- <google-map></google-map> -->
   </template>
 
   <script>
 
     Polymer({
-      apiKey: 'AIzaSyAx4TSHX3LEP1MC_sU4lwzyujmAWu3a740', // not needed?
-      input: 'Bryant Park, New York, NY', // string
+      // input: 'New York, NY', // string
       // input: ['1501 Lexington Avenue, New York, NY 10029', '54 West 40th Street, New York, NY 10018'], // array
-      // input: '40.7863301, -73.95027060000001', // coordinates for reverseGeocode
-      // input: [{'address':'1501 Lexington Avenue, New York, NY 10029', 'address2':'1500 Lexington Avenue, New York, NY 10029'}, {'address':'54 West 40th Street, New York, NY 10018', 'address2':'56 West 40th Street, New York, NY 10018'}], // array of objects
+      // input: '40.7863301, -73.95027060000001', // coordinates for reverseGeocode => set reverseGeocode = true;
+      input: [{'address':'1501 Lexington Avenue, New York, NY 10029', 'address2':'Rockefeller Center, New York, NY'}, {'address':'54 West 40th Street, New York, NY 10018', 'address2':'Brooklyn Bridge Park, New York, NY'}], // array of objects
       // input: {'address': '1501 Lexington Avenue, New York, NY 10029' }, // object
       output: [],
       /**
@@ -81,12 +81,12 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
        * @type {Boolean}
        */
       reverseGeocode: false,
-      ready: function() {
+      apiReady: function(){
         var self = this;
         self.geocoder = new google.maps.Geocoder(); 
+        console.log(self.geocoder);
         self.geocodeFunc = self.reverseGeocode ? self._addLocationToOutput : self._addGeocodeToOutput;
         self.inputChanged();
-        
       },
       inputChanged: function(){
         var self = this;
@@ -120,6 +120,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
                   alert("Invalid input data");      
                 }
               }
+
             // Single object              
             } else { 
               self._dataAttributes = Object.keys(self.input);
@@ -132,6 +133,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
           default: 
             alert("Invalid input data");      
         }
+
 
       },
       /**
@@ -150,8 +152,8 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
            } else {
               alert("Geocode was not successful for the following reason: " + status);
            }
+
         });
-        
       },
       /**
        * '_addLocationToOutput' adds an object containing the location and coordinates to the output array
@@ -189,7 +191,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
        */
       showControls: function(e) {
         this.$.ctrl_collapse.toggle();
-      } 
+      }
      
 
     });
