@@ -4,6 +4,7 @@
 <link rel="import" href="../core-collapse/core-collapse.html">
 <link rel="import" href="../core-icon-button/core-icon-button.html">
 <link rel="import" href="../google-apis/google-maps-api.html">
+<!-- <link rel="import" href="../th-geocoder-firebase/th-geocoder-firebase.html"> -->
 
 <!--
 
@@ -73,7 +74,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
       // input: 'New York, NY', // string
       // input: ['1501 Lexington Avenue, New York, NY 10029', '54 West 40th Street, New York, NY 10018'], // array
       // input: '40.7863301, -73.95027060000001', // coordinates for reverseGeocode => set reverseGeocode = true;
-      input: [{'address':'1501 Lexington Avenue, New York, NY 10029', 'address2':'Columbus Circle, New York, NY'}, {'address':'54 West 40th Street, New York, NY 10018', 'address2':'Brooklyn Bridge Park, New York, NY'}], // array of objects
+      // input: [{'address1':'1501 Lexington Avenue, New York, NY 10029', 'address2':'Columbus Circle, New York, NY'}, {'address1':'54 West 40th Street, New York, NY 10018', 'address2':'Brooklyn Bridge Park, New York, NY'}], // array of objects
       // input: {'address': '1501 Lexington Avenue, New York, NY 10029' }, // object
       output: [],
       /**
@@ -84,56 +85,61 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
       apiReady: function(){
         var self = this;
         self.geocoder = new google.maps.Geocoder(); 
-        console.log(self.geocoder);
         self.geocodeFunc = self.reverseGeocode ? self._addLocationToOutput : self._addGeocodeToOutput;
-        self.inputChanged();
+        if(self.input){
+          self.inputChanged();
+        }
       },
       inputChanged: function(){
         var self = this;
-
+        console.log("input changed");
         // Clear output anytime the input changes
         self.output= []; 
-        
-        // Determine data structure of input and get coordinates for each location
-        switch (typeof(self.input)){
-          // Input is a string
-          case "string":
-            self.geocodeFunc(self.input, self.output);
-            break;
-          
-          // Input is an array or object
-          case "object": 
-            var length = self.input.length;
-            if (length > 0){
-              for (var i=0; i<length; i++){
-                // Array of strings
-                if (typeof(self.input[i]) === 'string'){ 
-                  self.geocodeFunc(self.input[i], self.output);
+
+        if (self.geocoder){
+          // Determine data structure of input and get coordinates for each location
+          switch (typeof(self.input)){
+            // Input is a string
+            case "string":
+              self.inputLength=1;
+              self.geocodeFunc(self.input, self.output);
+              break;
+            
+            // Input is an array or object
+            case "object": 
+              var length = self.input.length;
+              if (length > 0){
+                for (var i=0; i<length; i++){
+                  self.inputLength=self.input.length;
+                  // Array of strings
+                  if (typeof(self.input[i]) === 'string'){ 
+                    self.geocodeFunc(self.input[i], self.output);
+                  }
+                  // Array of objects
+                  else if (typeof(self.input[i]) === 'object'){ 
+                    self._dataAttributes = Object.keys(self.input[i]);
+                    self._selectedLabel = self._selectedLabel || self._dataAttributes[0];
+                    self.geocodeFunc(self.input[i][self._selectedLabel], self.output);
+                  // Array of anything else 
+                  } else { 
+                    alert("Invalid input data");      
+                  }
                 }
-                // Array of objects
-                else if (typeof(self.input[i]) === 'object'){ 
-                  self._dataAttributes = Object.keys(self.input[i]);
-                  self._selectedLabel = self._selectedLabel || self._dataAttributes[0];
-                  self.geocodeFunc(self.input[i][self._selectedLabel], self.output);
-                // Array of anything else 
-                } else { 
-                  alert("Invalid input data");      
-                }
+
+              // Single object              
+              } else { 
+                self.inputLength=1;
+                self._dataAttributes = Object.keys(self.input);
+                self._selectedLabel = self._selectedLabel || self._dataAttributes[0];
+                self.geocodeFunc(self.input[self._selectedLabel], self.output);
               }
+              break;  
 
-            // Single object              
-            } else { 
-              self._dataAttributes = Object.keys(self.input);
-              self._selectedLabel = self._selectedLabel || self._dataAttributes[0];
-              self.geocodeFunc(self.input[self._selectedLabel], self.output);
-            }
-            break;  
-
-          // Input is something else
-          default: 
-            alert("Invalid input data");      
+            // Input is something else
+            default: 
+              alert("Invalid input data");      
+          }
         }
-
 
       },
       /**
@@ -143,12 +149,14 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
        */
       _addGeocodeToOutput: function(location, outputArr){
         var self = this;
-        
         self.geocoder.geocode({'address': location}, function(results, status){
            if (status == google.maps.GeocoderStatus.OK) {
+
               var lat = results[0].geometry.location.k,
                   lng = results[0].geometry.location.B;
+                  console.log(lat);
               outputArr.push({'input': location, 'label': location, 'latitude': lat, 'longitude':lng});
+              console.log(self.output);
            } else {
               alert("Geocode was not successful for the following reason: " + status);
            }
@@ -174,6 +182,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
               // TODO: what should the output look like?? can also get city, state, zip, etc separately 
               var location = results[0].formatted_address;
               outputArr.push({'input': latlng, 'label': location, 'latitude':lat, 'longitude': lng });
+              console.log(outputArr);
            } else {
               alert("Geocode was not successful for the following reason: " + status);
            }
@@ -191,6 +200,13 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
        */
       showControls: function(e) {
         this.$.ctrl_collapse.toggle();
+      },
+      outputChanged: function(){
+        var self = this;
+        // When output is ready, fire event for other components to use
+        if (self.output.length === self.inputLength){
+          self.fire('th-output-ready', self.output)
+        }
       }
      
 
