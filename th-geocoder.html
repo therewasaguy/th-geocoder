@@ -62,7 +62,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
       </core-selector>
     </core-collapse>
     
-    <p>{{errors.length}} location(s) not found:</p>
+    <p>{{errors.length}} location(s) NOT found:</p>
     <template repeat="{{error in errors}}">
       <li>Location: {{error.location}}, reason: {{error.reason}}</li>
     </template>
@@ -92,25 +92,27 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
         var self = this;
         self.geocoder = new google.maps.Geocoder(); 
         self.geocodeFunc = self.reverseGeocode ? self._addLocationToOutput : self._addGeocodeToOutput;
+        
         if(self.input){
           self.parseInput();
+          self.getLocations();
         }
       },
       inputChanged:function(){
         var self = this;
         self.output = [];
-
       },
       parseInput: function(){
         var self = this;
 
         if (self.geocoder){
-          // Determine data structure of input and get coordinates for each location
+          
+          // Determine data structure of input and convert input to an array of strings
           switch (typeof(self.input)){
             // Input is a string
             case "string":
               self.inputLength=1;
-              self.geocodeFunc(self.input, self.output);
+              self.inputArray = [self.input];
               break;
             
             // Input is an array or object
@@ -121,32 +123,13 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
 
                 // Array of strings
                 if (typeof(self.input[0]) === 'string'){ 
-                  var i = 0;
-                  var interval = setInterval(function(){
-                      self.geocodeFunc(self.input[i], self.output);
-                      i++;
-                      if(i === length) {
-                        clearInterval(interval);
-                      }
-                  }, 300); 
-
-                  console.log(self.output);
+                  self.inputArray = self.input;
                 }
                 // Array of objects
                 else if (typeof(self.input[0]) === 'object'){ 
                   self._dataAttributes = Object.keys(self.input[0]);
                   self._selectedLabel = self._selectedLabel || self._dataAttributes[0];
-                  
-                  var i = 0;
-                  var interval = setInterval(function(){
-                      self.geocodeFunc(self.input[i][self._selectedLabel], self.output);
-                      i++;
-                      if(i === length) {
-                        clearInterval(interval);
-                      }
-                  }, 300); 
-
-                  console.log(self.output);
+                  self.inputArray = self.input.map(function(obj){return obj[self._selectedLabel]});
                 }
 
                 // Array of anything else
@@ -159,7 +142,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
                 self.inputLength=1;
                 self._dataAttributes = Object.keys(self.input);
                 self._selectedLabel = self._selectedLabel || self._dataAttributes[0];
-                self.geocodeFunc(self.input[self._selectedLabel], self.output);
+                self.inputArray = [self.input[self._selectedLabel]];
               }
               break;  
 
@@ -168,6 +151,20 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
               alert("Invalid input data");      
           }
         }
+
+      },
+      getLocations: function(){
+        var self = this,
+            inputLength = self.inputArray.length,
+            i = 0;
+        
+        var interval = setInterval(function(){
+            self.geocodeFunc(self.inputArray[i], self.output);
+            i++;
+            if(i === inputLength) {
+              clearInterval(interval);
+            }
+        }, 300); 
 
       },
       /**
@@ -239,6 +236,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
        */
       _selectedLabelChanged: function(){
         this.inputChanged();
+        console.log("label changed");
       },
       /**
        * showControls toggles the menu for choosing the correct field
@@ -257,6 +255,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
       displayErrors: function(){
         var self = this;
         console.log(self.errors);
+
       }
      
 
