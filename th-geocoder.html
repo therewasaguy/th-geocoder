@@ -81,6 +81,10 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
       // input: '40.7863301, -73.95027060000001', // coordinates for reverseGeocode => set reverseGeocode = true;
       // input: [{'address1':'1501 Lexington Avenue, New York, NY 10029', 'address2':'Columbus Circle, New York, NY'}, {'address1':'54 West 40th Street, New York, NY 10018', 'address2':'Brooklyn Bridge Park, New York, NY'}], // array of objects
       // input: {'address': '1501 Lexington Avenue, New York, NY 10029' }, // object
+      /**
+       * The 'output' attribute begins as an empty array and receives objects containing the geocode/location info
+       * @type {Array}
+       */
       output: [],
       /**
        * 'reverseGeocode' is set to true when input is a set of lat/lng coordinates that need to be converted to a location
@@ -92,7 +96,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
         var self = this;
         self.geocoder = new google.maps.Geocoder(); 
         self.geocodeFunc = self.reverseGeocode ? self._addLocationToOutput : self._addGeocodeToOutput;
-        
+
         if(self.input){
           self.parseInput();
           self.getLocations();
@@ -236,6 +240,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
        */
       _selectedLabelChanged: function(){
         this.inputChanged();
+        this.parseInput();
         console.log("label changed");
       },
       /**

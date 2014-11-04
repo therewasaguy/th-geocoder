@@ -17,7 +17,7 @@
   <template is="auto-binding">
     <th-csv id="data" url="/th-geocoder/berlin.csv"></th-csv>
     <th-google-map markers="{{$.geocoder.output}}" fitToMarkers="true" width="400" height="400"></th-google-map>
-    <th-geocoder id="geocoder" input="{{$.data.output}}"></th-geocoder>
+    <th-geocoder id="geocoder"></th-geocoder>
     
 
   </template>
