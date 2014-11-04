@@ -61,8 +61,13 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
         </template>
       </core-selector>
     </core-collapse>
+    
+    <p>{{errors.length}} location(s) not found:</p>
+    <template repeat="{{error in errors}}">
+      <li>Location: {{error.location}}, reason: {{error.reason}}</li>
+    </template>
 
-
+    <p>{{output.length}} location(s) found:</p>
     <template repeat="{{place in output}}">
       <li>{{place.label}}: ({{place.latitude}}, {{place.longitude}})</li>
     </template>
@@ -74,7 +79,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
       // input: 'New York, NY', // string
       // input: ['1501 Lexington Avenue, New York, NY 10029', '54 West 40th Street, New York, NY 10018'], // array
       // input: '40.7863301, -73.95027060000001', // coordinates for reverseGeocode => set reverseGeocode = true;
-      input: [{'address1':'1501 Lexington Avenue, New York, NY 10029', 'address2':'Columbus Circle, New York, NY'}, {'address1':'54 West 40th Street, New York, NY 10018', 'address2':'Brooklyn Bridge Park, New York, NY'}], // array of objects
+      // input: [{'address1':'1501 Lexington Avenue, New York, NY 10029', 'address2':'Columbus Circle, New York, NY'}, {'address1':'54 West 40th Street, New York, NY 10018', 'address2':'Brooklyn Bridge Park, New York, NY'}], // array of objects
       // input: {'address': '1501 Lexington Avenue, New York, NY 10029' }, // object
       output: [],
       /**
@@ -82,19 +87,22 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
        * @type {Boolean}
        */
       reverseGeocode: false,
+      errors: [],
       apiReady: function(){
         var self = this;
         self.geocoder = new google.maps.Geocoder(); 
         self.geocodeFunc = self.reverseGeocode ? self._addLocationToOutput : self._addGeocodeToOutput;
         if(self.input){
-          self.inputChanged();
+          self.parseInput();
         }
       },
-      inputChanged: function(){
+      inputChanged:function(){
         var self = this;
-        console.log("input changed");
-        // Clear output anytime the input changes
-        self.output= []; 
+        self.output = [];
+
+      },
+      parseInput: function(){
+        var self = this;
 
         if (self.geocoder){
           // Determine data structure of input and get coordinates for each location
@@ -109,21 +117,41 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
             case "object": 
               var length = self.input.length;
               if (length > 0){
-                for (var i=0; i<length; i++){
-                  self.inputLength=self.input.length;
-                  // Array of strings
-                  if (typeof(self.input[i]) === 'string'){ 
-                    self.geocodeFunc(self.input[i], self.output);
-                  }
-                  // Array of objects
-                  else if (typeof(self.input[i]) === 'object'){ 
-                    self._dataAttributes = Object.keys(self.input[i]);
-                    self._selectedLabel = self._selectedLabel || self._dataAttributes[0];
-                    self.geocodeFunc(self.input[i][self._selectedLabel], self.output);
-                  // Array of anything else 
-                  } else { 
-                    alert("Invalid input data");      
-                  }
+                self.inputLength = length;
+
+                // Array of strings
+                if (typeof(self.input[0]) === 'string'){ 
+                  var i = 0;
+                  var interval = setInterval(function(){
+                      self.geocodeFunc(self.input[i], self.output);
+                      i++;
+                      if(i === length) {
+                        clearInterval(interval);
+                      }
+                  }, 300); 
+
+                  console.log(self.output);
+                }
+                // Array of objects
+                else if (typeof(self.input[0]) === 'object'){ 
+                  self._dataAttributes = Object.keys(self.input[0]);
+                  self._selectedLabel = self._selectedLabel || self._dataAttributes[0];
+                  
+                  var i = 0;
+                  var interval = setInterval(function(){
+                      self.geocodeFunc(self.input[i][self._selectedLabel], self.output);
+                      i++;
+                      if(i === length) {
+                        clearInterval(interval);
+                      }
+                  }, 300); 
+
+                  console.log(self.output);
+                }
+
+                // Array of anything else
+                else {
+                  alert("Invalid input data");      
                 }
 
               // Single object              
@@ -158,7 +186,16 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
               outputArr.push({'input': location, 'label': location, 'latitude': lat, 'longitude':lng});
               console.log(self.output);
            } else {
-              alert("Geocode was not successful for the following reason: " + status);
+             console.log("Geocode for "+ location +" was not successful for the following reason: " + status);
+             
+             if(status == "OVER_QUERY_LIMIT"){
+              setTimeout(function(){
+                self._addGeocodeToOutput(location, outputArr);
+              },1000)
+             } else {
+               self.errors.push({location: location, reason: status});
+             }
+             
            }
 
         });
@@ -184,7 +221,15 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
               outputArr.push({'input': latlng, 'label': location, 'latitude':lat, 'longitude': lng });
               console.log(outputArr);
            } else {
-              alert("Geocode was not successful for the following reason: " + status);
+             console.log("Geocode for "+ latlng +" was not successful for the following reason: " + status);
+             
+             if(status == "OVER_QUERY_LIMIT"){
+              setTimeout(function(){
+                self._addLocationToOutput(latlng, outputArr);
+              },1000)
+             } else {
+                self.errors.push({location: latlng, reason: status}); 
+             }
            }
         });
       },
@@ -207,6 +252,11 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
         if (self.output.length === self.inputLength){
           self.fire('th-output-ready', self.output)
         }
+        self.displayErrors();
+      },
+      displayErrors: function(){
+        var self = this;
+        console.log(self.errors);
       }
      
 
