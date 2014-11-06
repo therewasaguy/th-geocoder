@@ -57,7 +57,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
       <label for="label_selector">Select label column: </label> 
       <core-selector id="label_selector" selected="{{_selectedLabel}}" valueattr="label">
         <template repeat="{{attr in _dataAttributes}}">
-          <div label="{{attr}}">{{attr}}</div>
+          <div label="{{attr}}" on-click="{{selectionChanged}}">{{attr}}</div>
         </template>
       </core-selector>
     </core-collapse>
@@ -104,11 +104,35 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
       },
       inputChanged:function(){
         var self = this;
+        console.log('geocoder input changed');
+        self.fire('th-input-changed', self);
+        console.log('clear output');
         self.output = [];
+        self.errors=[];
+        self.parseInput();
+        self.getLocations();
+        // console.log("inputChanged");
+      },
+      /**
+       * _selectedLabelChanged calls the inputChanged method when the selection changes
+       * @return {[type]} [description]
+       */
+      selectionChanged: function(){
+        console.log('geocoder selection changed');
+        var self = this;
+        self.output = [];
+        self.errors=[];
+        if(self.input.length > 0){
+          self.inputArray = self.input.map(function(obj){return obj[self._selectedLabel]});
+        } else {
+          self.inputArray = [self.input[self._selectedLabel]];
+        }
+        self.getLocations();
+        
       },
       parseInput: function(){
         var self = this;
-
+        console.log("parsing input");
         if (self.geocoder){
           
           // Determine data structure of input and convert input to an array of strings
@@ -138,7 +162,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
 
                 // Array of anything else
                 else {
-                  alert("Invalid input data");      
+                  console.log("Invalid input data");      
                 }
 
               // Single object              
@@ -152,24 +176,29 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
 
             // Input is something else
             default: 
-              alert("Invalid input data");      
+              console.log("Invalid input data");      
           }
         }
 
       },
       getLocations: function(){
+        console.log('get locations');
         var self = this,
             inputLength = self.inputArray.length,
             i = 0;
-        
-        var interval = setInterval(function(){
-            self.geocodeFunc(self.inputArray[i], self.output);
-            i++;
-            if(i === inputLength) {
-              clearInterval(interval);
-            }
-        }, 300); 
-
+        if(!self.gettingLocations){
+          self.gettingLocations = true;
+          var interval = setInterval(function(){
+              self.geocodeFunc(self.inputArray[i], self.output);
+              i++;
+              if(i === inputLength) {
+                clearInterval(interval);
+                self.gettingLocations = false;
+              }
+          }, 300); 
+        } else {
+          console.log("already getting locations"); // In case getLocations() is called twice with the observers
+        }
       },
       /**
        * '_addGeocodeToOutput' adds an object containing the location and coordinates to the output array
@@ -234,15 +263,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
            }
         });
       },
-      /**
-       * _selectedLabelChanged calls the inputChanged method when the selection changes
-       * @return {[type]} [description]
-       */
-      _selectedLabelChanged: function(){
-        this.inputChanged();
-        this.parseInput();
-        console.log("label changed");
-      },
+
       /**
        * showControls toggles the menu for choosing the correct field
        */
@@ -252,7 +273,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
       outputChanged: function(){
         var self = this;
         // When output is ready, fire event for other components to use
-        if (self.output.length === self.inputLength){
+        if (self.output.length + self.errors.length === self.inputLength){
           self.fire('th-output-ready', self.output)
         }
         self.displayErrors();
