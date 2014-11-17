@@ -8,15 +8,12 @@
   ],
   "main": "th-geocoder.html",
   "dependencies": {
-    "polymer": "Polymer/polymer#^0.4.0",
-    "sortable-table": "~0.9.1",
-    "core-input": "Polymer/core-input#~0.4.1",
-    "core-selector": "Polymer/core-selector#~0.4.1",
-    "core-collapse": "Polymer/core-collapse#~0.4.1",
-    "core-icon-button": "Polymer/core-icon-button#~0.4.2",
-    "google-apis": "GoogleWebComponents/google-apis#~0.3.2"
-  },
-  "devDependencies": {
-    "polymer-test-tools": "Polymer/polymer-test-tools#^0.4.0"
+    "polymer": "Polymer/polymer#~0.5.1",
+    "core-selector": "polymer/core-selector#~0.5.1",
+    "core-collapse": "polymer/core-collapse#~0.5.1",
+    "core-icon-button": "polymer/core-icon-button#~0.5.1",
+    "google-apis": "GoogleWebComponents/google-apis#~0.4.2",
+    "th-csv": "https://github.com/thelmanews/th-csv.git",
+    "th-google-map": "https://github.com/thelmanews/th-google-map.git"
   }
 }
