@@ -1,4 +1,5 @@
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../th-animated/th-animated.html">
 <link rel="import" href="../core-selector/core-selector.html">
 <link rel="import" href="../core-collapse/core-collapse.html">
 <link rel="import" href="../core-icon-button/core-icon-button.html">
@@ -15,7 +16,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
 @status alpha
 @homepage http://thelmanews.github.io/th-geocoder
 -->
-<polymer-element name="th-geocoder" attributes="input reverseGeocode output">
+<polymer-element name="th-geocoder" extends="th-animated" attributes="input reverseGeocode output">
 
   <template>
     <style>
