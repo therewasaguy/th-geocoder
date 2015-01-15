@@ -82,15 +82,19 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
        * The 'output' attribute begins as an empty array and receives objects containing the geocode/location info
        * @type {Array}
        */
-      output: [],
+      // output: [],
       /**
        * 'reverseGeocode' is set to true when input is a set of lat/lng coordinates that need to be converted to a location
        * @type {Boolean}
        */
+      _selectedLabel: 'Birth City',
       reverseGeocode: false,
       errors: [],
       apiReady: function(){
         var self = this;
+        // TODO: ONLY WORKS W/ARRAYS/JSON -- UPDATE
+        self.output = self.input.map(function(location){return location});
+
         self.geocoder = new google.maps.Geocoder(); 
         self.geocodeFunc = self.reverseGeocode ? self._addLocationToOutput : self._addGeocodeToOutput;
 
@@ -104,7 +108,9 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
         console.log('geocoder input changed');
         self.fire('th-input-changed', self);
         console.log('clear output');
-        self.output = [];
+        // TODO: ONLY WORKS W/ARRAYS/JSON -- UPDATE
+        self.output = self.input.map(function(location){return location});
+
         self.errors=[];
         self.parseInput();
         self.getLocations();
@@ -117,7 +123,9 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
       selectionChanged: function(){
         console.log('geocoder selection changed');
         var self = this;
-        self.output = [];
+        // TODO: ONLY WORKS W/ARRAYS/JSON -- UPDATE
+        self.output = self.input.map(function(location){return location});
+
         self.errors=[];
         if(self.input.length > 0){
           self.inputArray = self.input.map(function(obj){return obj[self._selectedLabel]});
@@ -186,7 +194,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
         if(!self.gettingLocations){
           self.gettingLocations = true;
           var interval = setInterval(function(){
-              self.geocodeFunc(self.inputArray[i], self.output);
+              self.geocodeFunc(self.inputArray[i], self.output[i]);
               i++;
               if(i === inputLength) {
                 clearInterval(interval);
@@ -210,7 +218,10 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
               var lat = results[0].geometry.location.k,
                   lng = results[0].geometry.location.D;
                   
-              outputArr.push({'input': location, 'label': location, 'latitude': lat, 'longitude':lng});
+              outputArr['latitude'] = lat;
+              outputArr['longitude'] = lng;
+console.log(outputArr)
+              // outputArr.push({'input': location, 'label': location, 'latitude': lat, 'longitude':lng});
               console.log(self.output);
            } else {
 
@@ -221,7 +232,9 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
                 self._addGeocodeToOutput(location, outputArr);
               },1000)
              } else {
-                outputArr.push({'input': location, 'label': location, 'latitude': '', 'longitude':''});
+              outputArr['latitude'] = '';
+              outputArr['longitude'] = '';
+                // outputArr.push({'input': location, 'label': location, 'latitude': '', 'longitude':''});
                self.errors.push({location: location, reason: status});
              }
              
@@ -273,6 +286,8 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
         var self = this;
         // When output is ready, fire event for other components to use
         if (self.output.length + self.errors.length === self.inputLength){
+          console.log("****");
+          console.log(self.output);
           self.fire('th-output-ready', self.output)
         }
         self.displayErrors();
