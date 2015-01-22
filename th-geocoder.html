@@ -108,6 +108,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
       },
       setupOutput: function(){
         var self = this;
+        console.log('reset output');
         self.output = self.input.map(function(item){
           var newItem = {};
           var keys = Object.keys(item);
@@ -202,7 +203,11 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
         if(!self.gettingLocations){
           self.gettingLocations = true;
           var interval = setInterval(function(){
+            console.log('output before');
+            console.log(self.output);
               self.geocodeFunc(self.inputArray[i], self.output[i]);
+              console.log('output after');
+            console.log(self.output);
               i++;
               if(i === inputLength) {
                 clearInterval(interval);
@@ -225,18 +230,20 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
 
               var lat = results[0].geometry.location.k,
                   lng = results[0].geometry.location.D;
-                  
+                console.log(lat);  
+                console.log(lng);
               outputItem.latitude = lat;
               outputItem.longitude = lng;
-              
+              console.log(outputItem);
               self.output = self.output.map(function(item){return item;}); // Triggers change observer for deep changes in output.
+              console.log(self.output);
            } else {
 
              console.log("Geocode for "+ location +" was not successful for the following reason: " + status);
              
              if(status == "OVER_QUERY_LIMIT"){
               setTimeout(function(){
-                self.addGeocodeToOutput(location, outputItem);
+                self._addGeocodeToOutput(location, outputItem);
               },1000)
              } else {
                 outputItem.latitude = "";
