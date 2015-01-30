@@ -16,7 +16,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
 @status alpha
 @homepage http://thelmanews.github.io/th-geocoder
 -->
-<polymer-element name="th-geocoder" extends="th-animated" attributes="input reverseGeocode output">
+<polymer-element name="th-geocoder" extends="th-animated" attributes="input reverseGeocode output selectedLabel">
 
   <template>
     <style>
@@ -52,7 +52,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
     <core-icon-button icon="perm-data-setting" on-click="{{showControls}}"></core-icon-button>
     <core-collapse id="ctrl_collapse">      
       <label for="label_selector">Select label column: </label> 
-      <core-selector id="label_selector" selected="{{_selectedLabel}}" valueattr="label">
+      <core-selector id="label_selector" selected="{{selectedLabel}}" valueattr="label">
         <template repeat="{{attr in _dataAttributes}}">
           <div label="{{attr}}" on-click="{{selectionChanged}}">{{attr}}</div>
         </template>
@@ -121,7 +121,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
 
       },
       /**
-       * _selectedLabelChanged calls the inputChanged method when the selection changes
+       * selectedLabelChanged calls the inputChanged method when the selection changes
        * @return {[type]} [description]
        */
       selectionChanged: function(){
@@ -131,9 +131,9 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
         self.setupOutput();
         self.errors=[];
         if(self.input.length > 0){
-          self.inputArray = self.input.map(function(obj){return obj[self._selectedLabel]});
+          self.inputArray = self.input.map(function(obj){return obj[self.selectedLabel]});
         } else {
-          self.inputArray = [self.input[self._selectedLabel]];
+          self.inputArray = [self.input[self.selectedLabel]];
         }
         self.getLocations();
         
@@ -165,11 +165,11 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
                 else if (typeof(self.input[0]) === 'object'){ 
 
                   self._dataAttributes = Object.keys(self.input[0]);
-                  self._selectedLabel = self._selectedLabel || self._dataAttributes[0];
+                  self.selectedLabel = self.selectedLabel || self._dataAttributes[0];
                   console.log("^^^");
-                  console.log(self._selectedLabel);
+                  console.log(self.selectedLabel);
 
-                  self.inputArray = self.input.map(function(obj){return obj[self._selectedLabel]});
+                  self.inputArray = self.input.map(function(obj){return obj[self.selectedLabel]});
                   console.log(self.inputArray);
                 }
 
@@ -182,8 +182,8 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
               } else { 
                 self.inputLength=1;
                 self._dataAttributes = Object.keys(self.input);
-                self._selectedLabel = self._selectedLabel || self._dataAttributes[0];
-                self.inputArray = [self.input[self._selectedLabel]];
+                self.selectedLabel = self.selectedLabel || self._dataAttributes[0];
+                self.inputArray = [self.input[self.selectedLabel]];
               }
               console.log(self.inputArray);
               break;  
