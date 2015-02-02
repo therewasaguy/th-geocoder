@@ -64,10 +64,6 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
       <li>Location: {{error.location}}, reason: {{error.reason}}</li>
     </template>
 
-    <p>{{output.length}} location(s) found:</p>
-    <template repeat="{{place in output}}">
-      <li>{{place.label}}: ({{place.latitude}}, {{place.longitude}})</li>
-    </template>
   </template>
 
   <script>
@@ -91,10 +87,12 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
         self.geocodeFunc = self.reverseGeocode ? self._addLocationToOutput : self._addGeocodeToOutput;
 
         if(self.input){
+          self.outputToSave = [];
           self.setupOutput();
           self.parseInput();
           self.getLocations();
         }
+
       },
       inputChanged:function(){
         var self = this;
@@ -128,6 +126,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
         console.log('geocoder selection changed');
         var self = this;
         self.output = [];
+        self.outputToSave = [];
         self.setupOutput();
         self.errors=[];
         if(self.input.length > 0){
@@ -203,11 +202,9 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
         if(!self.gettingLocations){
           self.gettingLocations = true;
           var interval = setInterval(function(){
-            console.log('output before');
-            console.log(self.output);
+            
               self.geocodeFunc(self.inputArray[i], self.output[i]);
-              console.log('output after');
-            console.log(self.output);
+            
               i++;
               if(i === inputLength) {
                 clearInterval(interval);
@@ -226,29 +223,41 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
       _addGeocodeToOutput: function(location, outputItem){
         var self = this;
         self.geocoder.geocode({'address': location}, function(results, status){
+           var place = {'input': location};
            if (status == google.maps.GeocoderStatus.OK) {
 
               var lat = results[0].geometry.location.k,
                   lng = results[0].geometry.location.D;
                 console.log(lat);  
                 console.log(lng);
+                place.latitude=lat;
+                place.longitude=lng;
+                
+                self.outputToSave.push(place);
+                console.log(self.outputToSave);
+              // outputItem.input = location;
               outputItem.latitude = lat;
               outputItem.longitude = lng;
-              console.log(outputItem);
+// console.log(outputItem);
+              // console.log(outputItem);
               self.output = self.output.map(function(item){return item;}); // Triggers change observer for deep changes in output.
-              console.log(self.output);
+              // console.log(self.output);
            } else {
 
-             console.log("Geocode for "+ location +" was not successful for the following reason: " + status);
+             // console.log("Geocode for "+ location +" was not successful for the following reason: " + status);
              
              if(status == "OVER_QUERY_LIMIT"){
               setTimeout(function(){
-                self._addGeocodeToOutput(location, outputItem);
+                self._addGeocodeToOutput(location);
               },1000)
              } else {
+
                 outputItem.latitude = "";
                 outputItem.longitude = "";
-                // outputArr.push({'input': location, 'label': location, 'latitude': '', 'longitude':''});
+                place.latitude = "";
+                place.longitude = "";
+                self.outputToSave.push(place);
+                // outputToSave.push({'input': location, 'label': location, 'latitude': '', 'longitude':''});
                self.errors.push({location: location, reason: status});
              }
              
@@ -277,7 +286,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
               outputItem.label = location;
               
            } else {
-             console.log("Geocode for "+ latlng +" was not successful for the following reason: " + status);
+             // console.log("Geocode for "+ latlng +" was not successful for the following reason: " + status);
              
              if(status == "OVER_QUERY_LIMIT"){
               setTimeout(function(){
@@ -306,10 +315,14 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
       },
       displayErrors: function(){
         var self = this;
-        console.log(self.errors);
+        // console.log(self.errors);
 
       }
-     
+     // TODO: 
+     // - clean up 
+     // - display errors
+     // - sometimes when you switch selection, it finds from firebase? 
+     // - clean up the clearing of output and maybe the 'mapOutput and setupOutput' can be combined
 
     });
 
