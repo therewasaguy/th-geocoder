@@ -69,17 +69,16 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
   <script>
 
     Polymer({
-      // input: 'New York, NY', // string
-      // input: ['1501 Lexington Avenue, New York, NY 10029', '54 West 40th Street, New York, NY 10018'], // array
-      // input: '40.7863301, -73.95027060000001', // coordinates for reverseGeocode => set reverseGeocode = true;
       // input: [{'address1':'1501 Lexington Avenue, New York, NY 10029', 'address2':'Columbus Circle, New York, NY'}, {'address1':'54 West 40th Street, New York, NY 10018', 'address2':'Brooklyn Bridge Park, New York, NY'}], // array of objects
-      // input: {'address': '1501 Lexington Avenue, New York, NY 10029' }, // object
-
       /**
        * 'reverseGeocode' is set to true when input is a set of lat/lng coordinates that need to be converted to a location
        * @type {Boolean}
        */
       reverseGeocode: false,
+      /**
+       * 'errors' is initialized as an empty array and will collect any errors that occur with the Geocode API
+       * @type {Array}
+       */
       errors: [],
       apiReady: function(){
         var self = this;
@@ -87,7 +86,6 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
         self.geocodeFunc = self.reverseGeocode ? self._addLocationToOutput : self._addGeocodeToOutput;
 
         if(self.input){
-          self.outputToSave = [];
           self.setupOutput();
           self.parseInput();
           self.getLocations();
@@ -126,7 +124,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
         console.log('geocoder selection changed');
         var self = this;
         self.output = [];
-        self.outputToSave = [];
+        
         self.setupOutput();
         self.errors=[];
         if(self.input.length > 0){
@@ -164,12 +162,13 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
                 else if (typeof(self.input[0]) === 'object'){ 
 
                   self._dataAttributes = Object.keys(self.input[0]);
-                  self.selectedLabel = self.selectedLabel || self._dataAttributes[0];
-                  console.log("^^^");
-                  console.log(self.selectedLabel);
-
-                  self.inputArray = self.input.map(function(obj){return obj[self.selectedLabel]});
-                  console.log(self.inputArray);
+                  if(self.selectedLabel){
+                    self.inputArray = self.input.map(function(obj){return obj[self.selectedLabel]});
+                    console.log(self.inputArray);
+                  } else {
+                    break;
+                  }
+   
                 }
 
                 // Array of anything else
@@ -181,10 +180,12 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
               } else { 
                 self.inputLength=1;
                 self._dataAttributes = Object.keys(self.input);
-                self.selectedLabel = self.selectedLabel || self._dataAttributes[0];
-                self.inputArray = [self.input[self.selectedLabel]];
+                if(self.selectedLabel){
+                  self.inputArray = [self.input[self.selectedLabel]];
+                } else {
+                  break;
+                }
               }
-              console.log(self.inputArray);
               break;  
 
             // Input is something else
@@ -223,42 +224,38 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
       _addGeocodeToOutput: function(location, outputItem){
         var self = this;
         self.geocoder.geocode({'address': location}, function(results, status){
-           var place = {'input': location};
+           var firebaseItem = {'input': location};
+           
            if (status == google.maps.GeocoderStatus.OK) {
-
               var lat = results[0].geometry.location.k,
                   lng = results[0].geometry.location.D;
-                console.log(lat);  
-                console.log(lng);
-                place.latitude=lat;
-                place.longitude=lng;
-                
-                self.outputToSave.push(place);
-                console.log(self.outputToSave);
-              // outputItem.input = location;
+              
               outputItem.latitude = lat;
               outputItem.longitude = lng;
-// console.log(outputItem);
-              // console.log(outputItem);
               self.output = self.output.map(function(item){return item;}); // Triggers change observer for deep changes in output.
-              // console.log(self.output);
+
+              firebaseItem.latitude=lat;
+              firebaseItem.longitude=lng;
+              self.firebaseOutput.push(firebaseItem);
            } else {
 
-             // console.log("Geocode for "+ location +" was not successful for the following reason: " + status);
+             console.log("Geocode for "+ location +" was not successful for the following reason: " + status);
              
              if(status == "OVER_QUERY_LIMIT"){
               setTimeout(function(){
-                self._addGeocodeToOutput(location);
+                self._addGeocodeToOutput(location, outputItem);
               },1000)
              } else {
-
+              var errors= {location: location, reason: status};
                 outputItem.latitude = "";
                 outputItem.longitude = "";
-                place.latitude = "";
-                place.longitude = "";
-                self.outputToSave.push(place);
-                // outputToSave.push({'input': location, 'label': location, 'latitude': '', 'longitude':''});
-               self.errors.push({location: location, reason: status});
+                
+                firebaseItem.errors = errors;
+                firebaseItem.latitude = "";
+                firebaseItem.longitude = "";
+                
+                self.firebaseOutput.push(firebaseItem);
+                self.errors.push(errors);
              }
              
            }
@@ -311,19 +308,13 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
         if (self.output.length + self.errors.length === self.inputLength){
           self.fire('th-output-ready', self.output)
         }
-        self.displayErrors();
-      },
-      displayErrors: function(){
-        var self = this;
-        // console.log(self.errors);
-
+       
       }
-     // TODO: 
-     // - clean up 
-     // - display errors
-     // - sometimes when you switch selection, it finds from firebase? 
-     // - clean up the clearing of output and maybe the 'mapOutput and setupOutput' can be combined
-
+      // TODO
+      // - update addLocationToOutput method
+      // - remove firebase references from this component
+      // - update the ui for selection and errors
+      // - review logic and refactor
     });
 
   </script>
