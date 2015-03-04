@@ -84,8 +84,7 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
         var self = this;
         self.geocoder = new google.maps.Geocoder(); 
         self.geocodeFunc = self.reverseGeocode ? self._addLocationToOutput : self._addGeocodeToOutput;
-
-        if(self.input){
+        if(self.input.length > 0){
           self.setupOutput();
           self.parseInput();
           self.getLocations();
@@ -108,7 +107,6 @@ The th-geocoder retrieves the latitude and longitude coordinates of a location o
         self.output = self.input.map(function(item){
           var newItem = {};
           var keys = Object.keys(item);
-          
           keys.forEach(function(key) {
             newItem[key] = item[key];
           })
