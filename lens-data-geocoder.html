@@ -58,10 +58,13 @@ A data transform component that retrieves the latitude and longitude coordinates
           </template>
         </core-selector>
       
-      <p>{{errors.length}} location(s) NOT found:</p>
-      <template repeat="{{error in errors}}">
-        <li>Location: {{error.location}}, reason: {{error.reason}}</li>
+      <template bind if="{{ errors.length > 0 }}">
+        <p>{{errors.length}} location(s) NOT found:</p>
+        <template repeat="{{error in errors}}">
+          <li>Location: {{error.location}}, reason: {{error.reason}}</li>
+        </template>
       </template>
+
     </div>
 
   </template>
@@ -211,13 +214,14 @@ A data transform component that retrieves the latitude and longitude coordinates
 
       },
       getLocations: function(){
-        console.log('get locations');
+        var self = this,
+            inputLength,
+            i = 0;
         if (!this.inputArray) {
           return;
         }
-        var self = this,
-            inputLength = self.inputArray.length,
-            i = 0;
+        inputLength = self.inputArray.length;
+
         if(!self.gettingLocations){
           self.gettingLocations = true;
           var interval = setInterval(function(){
@@ -242,7 +246,7 @@ A data transform component that retrieves the latitude and longitude coordinates
       _addGeocodeToOutput: function(location, outputItem){
         var self = this;
         self.geocoder.geocode({'address': location}, function(results, status){
-           var firebaseItem = {'input': location};
+           // var firebaseItem = {'input': location};
            
            if (status == google.maps.GeocoderStatus.OK) {
               var lat = results[0].geometry.location.k,
@@ -252,9 +256,9 @@ A data transform component that retrieves the latitude and longitude coordinates
               outputItem.longitude = lng;
               self.output = self.output.map(function(item){return item;}); // Triggers change observer for deep changes in output.
 
-              firebaseItem.latitude=lat;
-              firebaseItem.longitude=lng;
-              self.firebaseOutput.push(firebaseItem);
+              // firebaseItem.latitude=lat;
+              // firebaseItem.longitude=lng;
+              // self.firebaseOutput.push(firebaseItem);
            } else {
 
              console.log("Geocode for "+ location +" was not successful for the following reason: " + status);
@@ -268,11 +272,11 @@ A data transform component that retrieves the latitude and longitude coordinates
                 outputItem.latitude = "";
                 outputItem.longitude = "";
                 
-                firebaseItem.errors = errors;
-                firebaseItem.latitude = "";
-                firebaseItem.longitude = "";
+                // firebaseItem.errors = errors;
+                // firebaseItem.latitude = "";
+                // firebaseItem.longitude = "";
                 
-                self.firebaseOutput.push(firebaseItem);
+                // self.firebaseOutput.push(firebaseItem);
                 self.errors.push(errors);
              }
              
