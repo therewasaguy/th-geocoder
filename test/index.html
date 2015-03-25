@@ -1,21 +1,18 @@
 <!doctype html>
 <html>
-
   <head>
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-    <title>Core Elements Test Runner</title>
-    <meta charset="UTF-8">
-
+    <meta charset="utf-8">
     <script src="../../webcomponentsjs/webcomponents.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
 
-    <link rel="import" href="tests.html">
+    <link rel="import" href="../lens-data-formula.html">
 
   </head>
-
   <body>
-
-    <div id="mocha"></div>
-
+    <script>
+      WCT.loadSuites([
+        'lens-data-geocoder-basic.html',
+      ]);
+    </script>
   </body>
-
 </html>

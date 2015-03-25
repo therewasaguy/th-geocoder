@@ -124,7 +124,8 @@ A data transform component that retrieves the latitude and longitude coordinates
       selectedLabel: null,
 
       observe: {
-        selectedLabel: "inputChanged"
+        selectedLabel: "inputChanged",
+        reverseGeocode: "reverseGeocodeChanged"
       },
 
       apiReady: function(){
@@ -214,7 +215,6 @@ A data transform component that retrieves the latitude and longitude coordinates
                   self._dataAttributes = Object.keys(self.input[0]);
                   if(self.selectedLabel){
                     self.inputArray = self.input.map(function(obj){return obj[self.selectedLabel]});
-                    console.log(self.inputArray);
                     break;
                   } else {
                     break;
@@ -318,7 +318,9 @@ A data transform component that retrieves the latitude and longitude coordinates
       // TODO: allow for latlng to be given in different ways, or separately
       _addLocationToOutput: function(latlng, outputItem){
         var self = this;
-        
+        if (typeof(latlng) === 'undefined') {
+          return;
+        }
         var latlngStr = latlng.split(',',2),
             lat = parseFloat(latlngStr[0]),
             lng = parseFloat(latlngStr[1]),
@@ -353,6 +355,11 @@ A data transform component that retrieves the latitude and longitude coordinates
           self.fire('th-output-ready', self.output)
         }
        
+      },
+
+      reverseGeocodeChanged: function() {
+        var self = this;
+        self.geocodeFunc = self.reverseGeocode ? self._addLocationToOutput : self._addGeocodeToOutput;
       }
       // TODO
       // - update addLocationToOutput method
