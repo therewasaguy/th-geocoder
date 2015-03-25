@@ -77,15 +77,24 @@ A data transform component that retrieves the latitude and longitude coordinates
        *  <code>['paris, texas', 'toledo, ohio', 'new york, ny']</code><br/>
        *  <br/>
        *  <code>[{'addr':'San Francisco, CA'}, {'addr':'Tokyo, Japan'}]</code>
-       *  
+       *  <br/><br/>
+       *  <code>[{"name": "loc1", "latlng": "35.7090259, 139.73199249999993"},
+       *  {"name": "loc2", "latlng": "40.7017076, -73.99701829999998"}];</code>
        *  
        *  @property input
        *  @type Array
        *  @default [ ]
-       *  
        */
       input: [],
 
+      /**
+       *  Array of output objects.
+       *  
+       *  @property output
+       *  @type Array
+       *  @default [ ]
+       */
+      output: [],
 
       /**
        *  'reverseGeocode' is set to true when input is a set of lat/lng
@@ -104,6 +113,15 @@ A data transform component that retrieves the latitude and longitude coordinates
        * [@type] Array
        */
       errors: [],
+
+      /**
+       *  Label of the column to be geocoded.
+       *  
+       *  @property selectedLabel
+       *  @type String
+       *  @default null
+       */
+      selectedLabel: null,
 
       observe: {
         selectedLabel: "inputChanged"
@@ -312,7 +330,7 @@ A data transform component that retrieves the latitude and longitude coordinates
               var location = results[0].formatted_address;
               outputItem.label = location;
 
-              // add to output
+              // add to output. Key is "label"
               self.output = self.output.map(function(item){return item;});
            } else {
              // console.log("Geocode for "+ latlng +" was not successful for the following reason: " + status);
