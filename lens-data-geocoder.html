@@ -4,17 +4,18 @@
 <link rel="import" href="../core-collapse/core-collapse.html">
 <link rel="import" href="../core-icon-button/core-icon-button.html">
 <link rel="import" href="../google-apis/google-maps-api.html">
+
 <!--
-The lens-data-geocoder retrieves the latitude and longitude coordinates of a location or set of locations. It also can retrieve the location name, given a set or multple sets of coordinates.
+A data transform component that retrieves the latitude and longitude coordinates of a location or set of locations. It also can retrieve the location name, given a set or multple sets of coordinates.
 
 ##### Example
 
     <lens-data-geocoder></lens-data-geocoder>
 
 @element lens-data-geocoder
-@blurb The lens-data-geocoder retrieves the latitude and longitude coordinates of a location or set of locations. It also can retrieve the location name, given a set or multple sets of coordinates.
+@blurb A data transform component that retrieves the latitude and longitude coordinates of a location or set of locations. It also can retrieve the location name, given a set or multple sets of coordinates.
 @status alpha
-@homepage http://thelmanews.github.io/lens-data-geocoder
+@homepage http://lenses.github.io/lens-data-geocoder
 -->
 <polymer-element name="lens-data-geocoder" extends="th-animated" attributes="input reverseGeocode output selectedLabel">
 
@@ -45,31 +46,39 @@ The lens-data-geocoder retrieves the latitude and longitude coordinates of a loc
         padding: 2px;
       }
     </style>
-    <!-- Load Google Maps API -->
-    <google-maps-api on-api-load="{{apiReady}}"></google-maps-api>
-    
-    <!-- Menu for selecting input --> 
-    <core-icon-button icon="perm-data-setting" on-click="{{showControls}}"></core-icon-button>
-    <core-collapse id="ctrl_collapse">      
-      <label for="label_selector">Select label column: </label> 
-      <core-selector id="label_selector" selected="{{selectedLabel}}" valueattr="label">
-        <template repeat="{{attr in _dataAttributes}}">
-          <div label="{{attr}}" on-click="{{selectionChanged}}">{{attr}}</div>
-        </template>
-      </core-selector>
-    </core-collapse>
-    
-    <p>{{errors.length}} location(s) NOT found:</p>
-    <template repeat="{{error in errors}}">
-      <li>Location: {{error.location}}, reason: {{error.reason}}</li>
-    </template>
+
+    <div class="lens-container lens-data">
+      <!-- Load Google Maps API -->
+      <google-maps-api on-api-load="{{apiReady}}"></google-maps-api>
+      
+        <label for="label_selector">Select label column: </label> 
+        <core-selector id="label_selector" selected="{{selectedLabel}}" valueattr="label">
+          <template repeat="{{attr in _dataAttributes}}">
+            <div label="{{attr}}" on-click="{{selectionChanged}}">{{attr}}</div>
+          </template>
+        </core-selector>
+      
+      <p>{{errors.length}} location(s) NOT found:</p>
+      <template repeat="{{error in errors}}">
+        <li>Location: {{error.location}}, reason: {{error.reason}}</li>
+      </template>
+    </div>
 
   </template>
 
   <script>
 
     Polymer({
-      // input: [{'address1':'1501 Lexington Avenue, New York, NY 10029', 'address2':'Columbus Circle, New York, NY'}, {'address1':'54 West 40th Street, New York, NY 10018', 'address2':'Brooklyn Bridge Park, New York, NY'}], // array of objects
+      /**
+       *  Array of objects, i.e. ["new york, ny", "1501 Lexington Avenue, New York, NY 10029"]
+       *  
+       *  @property input
+       *  @type Array
+       *  @default [ ]
+       *  
+       */
+      input: [],
+      // inputArray: [],
       /**
        * 'reverseGeocode' is set to true when input is a set of lat/lng coordinates that need to be converted to a location
        * @type {Boolean}
@@ -80,6 +89,11 @@ The lens-data-geocoder retrieves the latitude and longitude coordinates of a loc
        * @type {Array}
        */
       errors: [],
+
+      observe: {
+        selectedLabel: "inputChanged"
+      },
+
       apiReady: function(){
         var self = this;
         self.geocoder = new google.maps.Geocoder(); 
@@ -165,6 +179,7 @@ The lens-data-geocoder retrieves the latitude and longitude coordinates of a loc
                   if(self.selectedLabel){
                     self.inputArray = self.input.map(function(obj){return obj[self.selectedLabel]});
                     console.log(self.inputArray);
+                    break;
                   } else {
                     break;
                   }
@@ -197,6 +212,9 @@ The lens-data-geocoder retrieves the latitude and longitude coordinates of a loc
       },
       getLocations: function(){
         console.log('get locations');
+        if (!this.inputArray) {
+          return;
+        }
         var self = this,
             inputLength = self.inputArray.length,
             i = 0;
@@ -296,12 +314,6 @@ The lens-data-geocoder retrieves the latitude and longitude coordinates of a loc
         });
       },
 
-      /**
-       * showControls toggles the menu for choosing the correct field
-       */
-      showControls: function(e) {
-        this.$.ctrl_collapse.toggle();
-      },
       outputChanged: function(){
         var self = this;
         // When output is ready, fire event for other components to use
