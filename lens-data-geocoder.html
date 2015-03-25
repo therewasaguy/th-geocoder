@@ -73,7 +73,11 @@ A data transform component that retrieves the latitude and longitude coordinates
 
     Polymer({
       /**
-       *  Array of objects, i.e. ["new york, ny", "1501 Lexington Avenue, New York, NY 10029"]
+       *  Array of objects. Examples: <br/><br/>
+       *  <code>['paris, texas', 'toledo, ohio', 'new york, ny']</code><br/>
+       *  <br/>
+       *  <code>[{'addr':'San Francisco, CA'}, {'addr':'Tokyo, Japan'}]</code>
+       *  
        *  
        *  @property input
        *  @type Array
@@ -81,15 +85,23 @@ A data transform component that retrieves the latitude and longitude coordinates
        *  
        */
       input: [],
-      // inputArray: [],
+
+
       /**
-       * 'reverseGeocode' is set to true when input is a set of lat/lng coordinates that need to be converted to a location
-       * @type {Boolean}
+       *  'reverseGeocode' is set to true when input is a set of lat/lng
+       *  coordinates that need to be converted to a location
+       *  
+       *  @property reverseGeocode
+       *  @type Boolean
+       *  @default false
        */
       reverseGeocode: false,
+
       /**
-       * 'errors' is initialized as an empty array and will collect any errors that occur with the Geocode API
-       * @type {Array}
+       * 'errors' is initialized as an empty array and will collect any
+       * errors that occur with the Geocode API
+       * [@private]
+       * [@type] Array
        */
       errors: [],
 
@@ -293,13 +305,15 @@ A data transform component that retrieves the latitude and longitude coordinates
             lat = parseFloat(latlngStr[0]),
             lng = parseFloat(latlngStr[1]),
             coordinates = new google.maps.LatLng( lat, lng );
-        
+
         self.geocoder.geocode({'latLng': coordinates}, function(results, status){
            if (status == google.maps.GeocoderStatus.OK) {
               
               var location = results[0].formatted_address;
               outputItem.label = location;
-              
+
+              // add to output
+              self.output = self.output.map(function(item){return item;});
            } else {
              // console.log("Geocode for "+ latlng +" was not successful for the following reason: " + status);
              

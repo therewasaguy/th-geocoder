@@ -85,9 +85,13 @@
       </section>
 
       <script>
-        var input = [{'address1':'1501 Lexington Avenue, New York, NY 10029', 'address2':'Columbus Circle, New York, NY'}, {'address1':'54 West 40th Street, New York, NY 10018', 'address2':'Brooklyn Bridge Park, New York, NY'}];
-
+        // var input = [{'address1':'1501 Lexington Avenue, New York, NY 10029', 'address2':'Columbus Circle, New York, NY'},{'address1':'San Francisco, CA', 'address2':'Tokyo, Japan'},{'address1':'Cairo, Egypt', 'address2':'Buenos Aires, Argentina'}, {'address1':'54 West 40th Street, New York, NY 10018', 'address2':'Brooklyn Bridge Park, New York, NY'}];
+        // var input = ['paris, texas', 'toledo, ohio', 'new york, ny'];
         //set the input
+
+        var input = [{"name": "loc1", "latlng": "35.7090259, 139.73199249999993"}, {"name": "loc12", "latlng": "40.7017076, -73.99701829999998"}];
+
+        component.reverseGeocode = true;
         component.input = input;
       </script>
 
