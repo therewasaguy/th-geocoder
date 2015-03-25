@@ -10,9 +10,89 @@
 </head>
 <body unresolved>
 
-  <p>An `lens-data-geocoder` looks like this:</p>
-    
-  <lens-data-geocoder id="geocoder"></lens-data-geocoder>
+    <style>
+      body {
+        font-family: sans-serif;
+        font-size: 14px;
+      }
+
+      pre {
+        border: 1px solid #EEE;
+        font-size: 12px;
+        max-width: 300px;
+        max-height: 300px;
+        overflow: scroll;
+
+      }
+      #component {
+        border: 1px solid #BBB;
+        margin: 10px;
+        padding: 5px;
+        display: block;
+        width: 300px;
+      }
+
+      .component::before, .component::after {
+        content: '\2794';
+        position: absolute;
+        top: 50%;
+      }
+      .component::before {
+        right: -15px;
+      }
+
+      .component::after {
+        left: -15px;
+      }
+
+      section {
+        display: inline-block;
+        margin: 8px;
+        vertical-align: top;
+        position: relative;
+      }
+      html /deep/ input[is=core-input] {
+        border-bottom: 1px solid #E5E5E5 !important;
+      }
+
+    </style>
+
+    <script>
+
+      // helper function to stringify objects, used below like {{outputs | json}}
+      PolymerExpressions.prototype.json = function(object) {
+        return JSON.stringify(object, undefined, 2);
+      };
+
+    </script>
+  </head>
+
+
+  <body unresolved>
+
+    <template id="auto-bind-demo" is="auto-binding">
+      <section>
+        <label>Input:</label>
+        <pre id="input">{{myinput | json}}</pre>
+      </section>
+      <section class="component">
+        <label>Component:</label>
+          <lens-data-geocoder id="component" input="{{myinput}}" output="{{myoutput}}"></lens-data-geocoder>
+      </section>
+      <section>
+        <label>Output:</label>
+        <pre>{{myoutput | json}}</pre>
+      </section>
+
+      <script>
+        var input = [{'address1':'1501 Lexington Avenue, New York, NY 10029', 'address2':'Columbus Circle, New York, NY'}, {'address1':'54 West 40th Street, New York, NY 10018', 'address2':'Brooklyn Bridge Park, New York, NY'}];
+
+        //set the input
+        component.input = input;
+      </script>
+
+    </template>
+
 
 </body>
 </html>
