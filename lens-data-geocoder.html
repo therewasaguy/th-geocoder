@@ -123,6 +123,10 @@ A data transform component that retrieves the latitude and longitude coordinates
         var self = this;
         console.log('reset output');
         self.output = self.input.map(function(item){
+          // if input was an array of strings, return an object with that string as 'location'
+          if (typeof(item) === 'string') {
+            return {'location': item};
+          }
           var newItem = {};
           var keys = Object.keys(item);
           
@@ -177,7 +181,6 @@ A data transform component that retrieves the latitude and longitude coordinates
                 }
                 // Array of objects
                 else if (typeof(self.input[0]) === 'object'){ 
-
                   self._dataAttributes = Object.keys(self.input[0]);
                   if(self.selectedLabel){
                     self.inputArray = self.input.map(function(obj){return obj[self.selectedLabel]});
@@ -254,11 +257,9 @@ A data transform component that retrieves the latitude and longitude coordinates
               
               outputItem.latitude = lat;
               outputItem.longitude = lng;
-              self.output = self.output.map(function(item){return item;}); // Triggers change observer for deep changes in output.
 
-              // firebaseItem.latitude=lat;
-              // firebaseItem.longitude=lng;
-              // self.firebaseOutput.push(firebaseItem);
+              // Trigger change observer for deep changes in output.
+              self.output = self.output.map(function(item){return item;});
            } else {
 
              console.log("Geocode for "+ location +" was not successful for the following reason: " + status);
@@ -272,11 +273,6 @@ A data transform component that retrieves the latitude and longitude coordinates
                 outputItem.latitude = "";
                 outputItem.longitude = "";
                 
-                // firebaseItem.errors = errors;
-                // firebaseItem.latitude = "";
-                // firebaseItem.longitude = "";
-                
-                // self.firebaseOutput.push(firebaseItem);
                 self.errors.push(errors);
              }
              
@@ -328,9 +324,9 @@ A data transform component that retrieves the latitude and longitude coordinates
       }
       // TODO
       // - update addLocationToOutput method
-      // - remove firebase references from this component
-      // - update the ui for selection and errors
+      // - update the ui for selection
       // - review logic and refactor
+      // - return results for array of strings without chopping up each string
     });
 
   </script>
